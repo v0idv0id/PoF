@@ -59,7 +59,8 @@ class Canvas(app.Canvas):
 		app.Canvas.__init__(self)
 		print "Canvas init..."
 		self.xcolor=0.0
-		self.size = 50,50
+		self.size = 200,200
+		self.fid=0
 #		self._timer=app.Timer(1.0/60.0)
 		self._timer=app.Timer('auto')
 #		self.cap = cv2.VideoCapture('c.mp4')
@@ -80,8 +81,8 @@ class Canvas(app.Canvas):
 		model = np.eye(4, dtype=np.float32)
 		self.program['model'] = model
 		self.program['view'] = view
-		self.program['texture'] = rt.frame
-		#self.program['texture'] = checkerboard()
+		self.program['texture'] = rt[self.fid].frame
+		self.program['texture'] = checkerboard()
 
 		self.activate_zoom()
 
@@ -108,7 +109,7 @@ class Canvas(app.Canvas):
 #        		self.program['texture'] = self.frame
 #		else:
 #        		self.program['texture'] = self.frame
-		self.program['texture'] = rt.frame
+		self.program['texture'] = gloo.Texture2D(rt[self.fid].frame)
 		if self.xcolor > 1.0:
 			self.xcolor = 0.0
 		#gloo.set_clear_color((self.xcolor,1.0,1.0-self.xcolor, 1.0))
@@ -149,11 +150,14 @@ class Canvas(app.Canvas):
 	def on_mouse_press(self, event):
 		print event
 
+	def set_footage(self,x):
+		self.fid=x
+
 
 class ReaderThread ( threading.Thread ):
 
    def __init__ ( self, footage,fid ):
-
+      print "Reading: ",footage
       self.footage = footage
       self.fid = fid
       self.frame=[]
@@ -163,9 +167,15 @@ class ReaderThread ( threading.Thread ):
 
    def run ( self ):
 	while True:
-		self.ret,self.frame= self.cap.read()
+		self.ret,self.x= self.cap.read()
+		b,g,r=cv2.split(self.x)
+		self.frame=cv2.merge([r,g,b])
+		#cv2.cvtColor(self.frame,self.frame,cv2.COLOR_RGB2BGR)
+		#cv2.waitKey(0)
 		#print "read..."
+		#canvas.program['texture'] = self.frame
 		if not self.ret:
+			print "rewind...."
 			self.cap.set(cv2.cv.CV_CAP_PROP_POS_AVI_RATIO, 0);
 
 def xxx():
@@ -185,14 +195,24 @@ appi = QtGui.QApplication(sys.argv)
 MainWindow = QtGui.QMainWindow()
 ui = b.Ui_MainWindow()
 ui.setupUi(MainWindow)
-rt=ReaderThread ('c.mp4', 1 )
-rt.start()
+
+rt=[None]*10
+
+rt[0]=ReaderThread ('cc.mp4', 1 )
+rt[0].start()
+
+#rt[1]=ReaderThread ('cc.mp4', 2 )
+#rt[1].start()
+
+
 canvas = Canvas()
+canvas.set_footage(0);
 canvas.create_native()
 canvas.native.setParent(MainWindow)
 canvas.measure_fps()
 
 #canvas2 = Canvas()
+#canvas.set_footage(0);
 #canvas2.create_native()
 #canvas2.native.setParent(MainWindow)
 #canvas2.measure_fps()
@@ -200,7 +220,7 @@ canvas.measure_fps()
 #use("pyqt4")
 
 ui.hl.addWidget(canvas.native)
-#ui.hl.addWidget(canvas2.native)
+ui.hl.addWidget(canvas.native)
 
 
 scon()
