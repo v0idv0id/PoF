@@ -59,7 +59,9 @@ class Canvas(app.Canvas):
 		app.Canvas.__init__(self)
 		print "Canvas init..."
 		self.xcolor=0.0
+
 		self.size = 300,300
+
 		self.fid=0
 #		self._timer=app.Timer(1.0/60.0)
 		self._timer=app.Timer('auto')
@@ -120,7 +122,8 @@ class Canvas(app.Canvas):
 
 		self.update()
 	
-	def on_resize(self,event):
+	def on_resize(self,event
+):
 		self.activate_zoom()
 		#self.size=event.size
 
@@ -168,6 +171,7 @@ class ReaderThread ( threading.Thread ):
 
    def run ( self ):
 	while True:
+
 		ret,self.x= self.cap.read()
 		#print ret
 		if not ret:
