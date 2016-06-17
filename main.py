@@ -31,7 +31,7 @@ attribute vec4 color;
 varying vec2 v_texcoord;
 void main()
 {
-    gl_Position = projection * view * model * vec4(position,1.0);
+    gl_Position = projection * view * model*  vec4(position,1.0);
     v_texcoord = texcoord;
 }
 """
@@ -59,7 +59,7 @@ class Canvas(app.Canvas):
 		app.Canvas.__init__(self)
 		print "Canvas init..."
 		self.xcolor=0.0
-		self.size = 200,200
+		self.size = 300,300
 		self.fid=0
 #		self._timer=app.Timer(1.0/60.0)
 		self._timer=app.Timer('auto')
@@ -77,7 +77,7 @@ class Canvas(app.Canvas):
 		self.program.bind(vertices)
 
 		# Build view, model, projection & normal
-		view = translate((0, 0, -5))
+		view = translate((0, 0, -4))
 		model = np.eye(4, dtype=np.float32)
 		self.program['model'] = model
 		self.program['view'] = view
@@ -145,7 +145,7 @@ class Canvas(app.Canvas):
 	def on_mouse_move(self, event):
 		x, y = event.pos
 		ui.verticalSlider.setValue(x)
-		print x," ",y
+		#print x," ",y
 
 	def on_mouse_press(self, event):
 		print event
@@ -163,20 +163,24 @@ class ReaderThread ( threading.Thread ):
       self.frame=[]
       self.cap = cv2.VideoCapture(self.footage)
       self.ret,self.frame= self.cap.read()
+
       threading.Thread.__init__ ( self )
 
    def run ( self ):
 	while True:
-		self.ret,self.x= self.cap.read()
+		ret,self.x= self.cap.read()
+		#print ret
+		if not ret:
+			print "rewind...."
+			self.cap.set(cv2.cv.CV_CAP_PROP_POS_AVI_RATIO, 0);
+			ret,self.x= self.cap.read()
 		b,g,r=cv2.split(self.x)
 		self.frame=cv2.merge([r,g,b])
 		#cv2.cvtColor(self.frame,self.frame,cv2.COLOR_RGB2BGR)
 		#cv2.waitKey(0)
 		#print "read..."
 		#canvas.program['texture'] = self.frame
-		if not self.ret:
-			print "rewind...."
-			self.cap.set(cv2.cv.CV_CAP_PROP_POS_AVI_RATIO, 0);
+		
 
 def xxx():
 	print "x"
